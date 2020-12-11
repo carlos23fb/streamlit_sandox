@@ -1,10 +1,13 @@
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+import pickle
+
 penguins = pd.read_csv('penguins_cleaned.csv')
 
 
 df = penguins.copy()
-target = 'sex'
-encode = ['species', 'island']
+target = 'species'
+encode = ['sex', 'island']
 
 for col in encode:
     dummy = pd.get_dummies(df[col], prefix=col)
@@ -12,11 +15,17 @@ for col in encode:
     del df[col]
 
 
-target_mapper = {'Adeline': 0, 'Chinstrap': 1, 'Gentoo': 2}
-
-
+target_mapper = {'Adelie': 0, 'Chinstrap': 1, 'Gentoo': 2}
 def target_encode(val):
     return target_mapper[val]
 
 
-df['species'] = df['species'].aply(target_encode)
+df['species'] = df['species'].apply(target_encode)
+
+X = df.drop('species', axis=1)
+Y = df['species']
+
+clf = RandomForestClassifier()
+clf.fit(X, Y)
+
+pickle.dump(clf, open('penguins_clf.pkl', 'wb'))
